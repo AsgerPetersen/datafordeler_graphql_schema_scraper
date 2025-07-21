@@ -1,0 +1,38 @@
+name: Scheduled
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron:  '0 */1 * * *'  
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch latest schemas
+        run: |-
+          curl https://datafordeler.dk/GraphQLSchema/DAR.graphql -o DAR.graphql
+          curl https://datafordeler.dk/GraphQLSchema/BBR.graphql -o BBR.graphql
+          curl https://datafordeler.dk/GraphQLSchema/DS.graphql  -o DS.graphql
+          curl https://datafordeler.dk/GraphQLSchema/CVR.graphql -o CVR.graphql
+          curl https://datafordeler.dk/GraphQLSchema/EBR.graphql -o EBR.graphql
+          curl https://datafordeler.dk/GraphQLSchema/VUR.graphql -o VUR.graphql
+          curl https://datafordeler.dk/GraphQLSchema/EJF.graphql -o EJF.graphql
+          curl https://datafordeler.dk/GraphQLSchema/GEODKV.graphql -o GEODKV.graphql
+          curl https://datafordeler.dk/GraphQLSchema/MAT.graphql -o MAT.graphql
+          curl https://datafordeler.dk/GraphQLSchema/SVR.graphql -o SVR.graphql
+
+      - name: Commit and push if it changed
+        run: |-
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          timestamp=$(date -u)
+          git commit -m "Schema updated: ${timestamp}" || exit 0
+          git push
